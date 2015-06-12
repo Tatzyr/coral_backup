@@ -6,7 +6,7 @@ module CoralBackup
       actions: {}
     }
 
-    def initialize(filename = "#{Dir.home}/.coral")
+    def initialize(filename = "#{Dir.home}/.coral_backup")
       @filename = filename
       @settings = file_load
     end
