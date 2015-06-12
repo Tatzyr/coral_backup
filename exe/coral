@@ -1,3 +1,5 @@
 #!/usr/bin/env ruby
 
 require "coral_backup"
+
+CoralBackup::CLI.start(ARGV)
