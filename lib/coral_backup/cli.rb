@@ -1,5 +1,3 @@
-require "coral_backup/file_selector"
-require "coral_backup/settings"
 require "thor"
 
 module CoralBackup
