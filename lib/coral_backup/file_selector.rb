@@ -46,12 +46,15 @@ module CoralBackup
       while !file_added && buf = Readline.readline("> ")
         expanded = Shellwords.split(buf)
         warn "WARNING: #{expanded.length} files are being added:" unless expanded.length == 1
-        begin
-          file_selector.add_file(expanded[0])
-        rescue Errno::ENOENT => e
-          warn e
-        else
-          file_added = true
+        expanded.each do |ex|
+          begin
+            file_selector.add_file(ex)
+          rescue Errno::ENOENT => e
+            warn e
+          else
+            warn ex
+            file_added = true
+          end
         end
       end
 
