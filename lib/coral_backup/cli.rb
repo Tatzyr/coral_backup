@@ -1,3 +1,4 @@
+require "pathname"
 require "thor"
 
 module CoralBackup
