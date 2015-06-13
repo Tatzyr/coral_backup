@@ -11,7 +11,9 @@ module CoralBackup
 
     def add_file(filename)
       if FileTest.exist?(filename)
-        @files << filename
+        expanded_filename = File.expand_path(filename)
+        @files << File.expand_path(expanded_filename)
+        warn expanded_filename
       else
         raise Errno::ENOENT, filename
       end
@@ -29,8 +31,6 @@ module CoralBackup
             file_selector.add_file(ex)
           rescue Errno::ENOENT => e
             warn e
-          else
-            warn ex
           end
         end
       end
@@ -52,7 +52,6 @@ module CoralBackup
           rescue Errno::ENOENT => e
             warn e
           else
-            warn ex
             file_added = true
           end
         end
