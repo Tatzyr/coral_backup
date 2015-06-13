@@ -1,4 +1,4 @@
-require "toml"
+require "yaml"
 
 module CoralBackup
   class Settings
@@ -13,11 +13,11 @@ module CoralBackup
 
     def action_data(action_name)
       raise ArgumentError, "Backup action `#{action_name}' does not exist." unless exist_action?(action_name)
-      @settings[:actions][action_name.to_sym]
+      @settings[:actions][action_name]
     end
 
     def action_names
-      @settings[:actions].keys.map(&:to_s)
+      @settings[:actions].keys
     end
 
     def exist_action?(action_name)
@@ -26,19 +26,19 @@ module CoralBackup
 
     def add(action_name, source, destination, exclusions)
       raise ArgumentError, "Backup action `#{action_name}' already exists." if exist_action?(action_name)
-      @settings[:actions][action_name.to_sym] = { source: source, destination: destination, exclusions: exclusions }
+      @settings[:actions][action_name] = { source: source, destination: destination, exclusions: exclusions }
       file_dump
     end
 
     def delete(action_name)
       raise ArgumentError, "Backup action `#{action_name}' does not exist." unless exist_action?(action_name)
-      @settings[:actions].delete(action_name.to_sym)
+      @settings[:actions].delete(action_name)
       file_dump
     end
 
     def update_time(action_name, time)
       raise ArgumentError, "Backup action `#{action_name}' does not exist." unless exist_action?(action_name)
-      @settings[:actions][action_name.to_sym][:last_run_time] = time.to_s
+      @settings[:actions][action_name][:last_run_time] = time.to_s
       file_dump
     end
 
@@ -46,12 +46,12 @@ module CoralBackup
     def file_load
       return INITIAL_SETTINGS unless FileTest.exist?(@filename)
 
-      TOML.load_file(@filename, symbolize_keys: true)
+      YAML.load_file(@filename)
     end
 
     def file_dump
       open(@filename, "w") do |f|
-        f.puts TOML.dump(@settings)
+        YAML.dump(@settings, f)
       end
     end
   end
