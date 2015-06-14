@@ -16,7 +16,7 @@ $ gem install coral_backup
 * `coral help [COMMAND]`: Describe available commands or one specific command
 * `coral list`: Show all backup actions
 * `coral run <ACTION>`: Run the backup action
-* `coral show <ACTION>`: Show information about the backup action
+* `coral info <ACTION>`: Show information about the backup action
 * `coral version`: Print the version
 
 ### Options

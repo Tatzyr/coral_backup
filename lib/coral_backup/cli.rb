@@ -105,8 +105,8 @@ module CoralBackup
     end
 
 
-    desc "show <ACTION>", "Show information about the backup action"
-    def show(action_name)
+    desc "info <ACTION>", "Show information about the backup action"
+    def info(action_name)
       data = @settings.action_data(action_name)
 
       puts "Source: #{data[:source]}"
