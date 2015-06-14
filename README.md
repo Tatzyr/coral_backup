@@ -2,6 +2,8 @@
 
 Coral Backup creates incremental backups of files that can be restored at a later date.
 
+![run](https://cloud.githubusercontent.com/assets/1025461/8147090/2d8be3bc-1299-11e5-8c46-50127cf74246.gif)
+
 ## Installation
 
 ```
@@ -22,6 +24,12 @@ $ gem install coral_backup
 ### Options
 
 * `-d`, `--dry-run`: Show what would have been backed up, but do not back them up
+
+### Demo
+
+![add](https://cloud.githubusercontent.com/assets/1025461/8147087/22e5ba1e-1299-11e5-91b2-1d39add9febb.gif)
+
+![info](https://cloud.githubusercontent.com/assets/1025461/8147088/2a55297e-1299-11e5-8a2d-222902419c6c.gif)
 
 ## Dependencies
 
