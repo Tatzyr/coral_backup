@@ -3,6 +3,15 @@ require "thor"
 
 module CoralBackup
   class CLI < Thor
+    OSX_VOLUME_ROOT_EXCLUSIONS = %w[
+      .DocumentRevisions-V100
+      .fseventsd
+      .Spotlight-V100
+      .TemporaryItems
+      .Trashes
+      .VolumeIcon.icns
+    ]
+
     def initialize(*args)
       super
       @settings = Settings.new
@@ -94,6 +103,15 @@ module CoralBackup
       exclusions.each do |exclusion|
         args << "--exclude"
         args << Pathname.new(exclusion).relative_path_from(Pathname.new(source)).to_s
+      end
+
+      if RUBY_PLATFORM.match(/darwin/)
+        if File.expand_path("..", source) == "/Volumes"
+          OSX_VOLUME_ROOT_EXCLUSIONS.each do |vr_exclusion|
+            args << "--exclude"
+            args << vr_exclusion
+          end
+        end
       end
 
       args << source
