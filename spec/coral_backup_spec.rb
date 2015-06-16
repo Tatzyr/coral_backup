@@ -52,5 +52,43 @@ describe CoralBackup do
         end
       end
     end
+
+    describe ".select" do
+      it "should return empty array" do
+        inputs = [nil].to_enum
+        allow(Readline).to receive(:readline) { inputs.next }
+        expect(CoralBackup::FileSelector.select).to be_empty
+      end
+
+      it "should allow to input files" do
+        Tempfile.open("foo") do |file1|
+          Tempfile.open("bar") do |file2|
+            inputs = [file1.path.shellescape, file2.path.shellescape, nil].to_enum
+            allow(Readline).to receive(:readline) { inputs.next }
+            expect(CoralBackup::FileSelector.select).to match_array [file1.path, file2.path]
+          end
+        end
+      end
+
+      it "should allow to input multiple files" do
+        Tempfile.open("foo") do |file1|
+          Tempfile.open("bar") do |file2|
+            inputs = [[file1.path, file2.path].shelljoin, nil].to_enum
+            allow(Readline).to receive(:readline) { inputs.next }
+            expect(CoralBackup::FileSelector.select).to match_array [file1.path, file2.path]
+          end
+        end
+      end
+
+      it "should reject unexist files" do
+        Tempfile.open("foo") do |file1|
+          Tempfile.open("bar") do |file2|
+            inputs = [(file1.path + "_lorem_ipsum").shellescape, file2.path.shellescape, nil].to_enum
+            allow(Readline).to receive(:readline) { inputs.next }
+            expect(CoralBackup::FileSelector.select).to match_array [file2.path]
+          end
+        end
+      end
+    end
   end
 end
