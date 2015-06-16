@@ -1,11 +1,56 @@
 require 'spec_helper'
 
 describe CoralBackup do
-  it 'has a version number' do
+  it "has a version number" do
     expect(CoralBackup::VERSION).not_to be nil
   end
 
-  it 'does something useful' do
-    expect(false).to eq(true)
+  describe CoralBackup::FileSelector do
+    let(:file_selector) { CoralBackup::FileSelector.new }
+
+    describe "#add_file" do
+      it "should add file" do
+        Tempfile.open("foo") do |file|
+          file_selector.add_file(file.path)
+          expect(file_selector.files).to match_array [file.path]
+        end
+      end
+
+      it "should add directory" do
+        Dir.mktmpdir do |dir|
+          file_selector.add_file(dir)
+          expect(file_selector.files).to match_array [dir]
+        end
+      end
+
+      it "should reject unexist files" do
+        Tempfile.open("foo") do |file|
+          filename = file.path + "_lorem_ipsum"
+          expect { file_selector.add_file(filename) }.to raise_error Errno::ENOENT
+        end
+      end
+
+      it "should be able to add multiple files" do
+        Tempfile.open("foo") do |file1|
+          Tempfile.open("bar") do |file2|
+            file_selector.add_file(file1.path)
+            file_selector.add_file(file2.path)
+            expect(file_selector.files).to match_array [file1.path, file2.path]
+          end
+        end
+      end
+
+      it "should add absolute path file" do
+        tmpdir = Pathname.new(Dir.tmpdir).realpath # expand symlinks of Dir.tmpdir
+        Tempfile.open("foo", tmpdir) do |file|
+          absolute_path = file.path
+          relative_path = Pathname.new(absolute_path).relative_path_from(tmpdir).to_s
+          Dir.chdir(tmpdir) do
+            file_selector.add_file(relative_path)
+          end
+          expect(file_selector.files).to match_array [absolute_path]
+        end
+      end
+    end
   end
 end
