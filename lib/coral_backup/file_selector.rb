@@ -57,13 +57,8 @@ module CoralBackup
         end
       end
 
-      unless file_selector.files.length == 1
-        warn "ERROR: Wrong number of directories (#{file_selector.files.length} for 1):"
-        file_selector.files.each do |e|
-          warn e
-        end
-        exit 1
-      end
+      raise "Wrong number of files (#{file_selector.files.length} for 1)" unless file_selector.files.length == 1
+
       file_selector.files[0]
     end
   end

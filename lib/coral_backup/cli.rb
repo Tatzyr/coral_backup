@@ -52,6 +52,9 @@ module CoralBackup
       destination << "/" unless destination.end_with?("/")
 
       @settings.add(action_name, source, destination, exclusions)
+    rescue RuntimeError => e
+      warn "ERROR: #{e}"
+      exit 1
     end
 
     desc "delete <ACTION>", "Delete the backup action"
