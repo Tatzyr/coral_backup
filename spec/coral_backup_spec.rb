@@ -90,5 +90,40 @@ describe CoralBackup do
         end
       end
     end
+
+    describe ".single_select" do
+      it "should add a file" do
+        Tempfile.open("foo") do |file|
+          allow(Readline).to receive(:readline) { file.path }
+          expect(CoralBackup::FileSelector.single_select).to eq file.path
+        end
+      end
+
+      it "should reject multiple files" do
+        Tempfile.open("foo") do |file1|
+          Tempfile.open("bar") do |file2|
+            inputs = [[file1.path, file2.path].shelljoin, nil].to_enum
+            allow(Readline).to receive(:readline) { inputs.next }
+            expect { CoralBackup::FileSelector.single_select }.to raise_error RuntimeError
+          end
+        end
+      end
+
+      it "should be needed to input a file" do
+        inputs = [nil].to_enum
+        allow(Readline).to receive(:readline) { inputs.next }
+        expect { CoralBackup::FileSelector.single_select }.to raise_error RuntimeError
+      end
+
+      it "should add the file when input multiple files but only one file exists" do
+        Tempfile.open("foo") do |file1|
+          Tempfile.open("bar") do |file2|
+            inputs = [[file1.path + "_lorem_ipsum", file2.path].shelljoin, nil].to_enum
+            allow(Readline).to receive(:readline) { inputs.next }
+            expect(CoralBackup::FileSelector.single_select).to eq file2.path
+          end
+        end
+      end
+    end
   end
 end
