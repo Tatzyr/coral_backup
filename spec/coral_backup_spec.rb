@@ -23,7 +23,7 @@ describe CoralBackup do
         end
       end
 
-      it "should reject unexist files" do
+      it "should reject nonexistent files" do
         Tempfile.open("foo") do |file|
           filename = file.path + "_lorem_ipsum"
           expect { file_selector.add_file(filename) }.to raise_error Errno::ENOENT
@@ -80,7 +80,7 @@ describe CoralBackup do
         end
       end
 
-      it "should reject unexist files" do
+      it "should reject nonexistent files" do
         Tempfile.open("foo") do |file1|
           Tempfile.open("bar") do |file2|
             inputs = [(file1.path + "_lorem_ipsum").shellescape, file2.path.shellescape, nil].to_enum
