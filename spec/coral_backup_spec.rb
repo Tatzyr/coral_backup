@@ -8,12 +8,18 @@ describe CoralBackup do
   describe CoralBackup::FileSelector do
     let(:file_selector) { CoralBackup::FileSelector.new }
 
+    let(:path1) { file1.path }
+    let(:path2) { file2.path }
+    let(:nonexistent_path) { temporary_file.path + "_blah_blah" }
+
+    let(:file1) { Tempfile.new("file1") }
+    let(:file2) { Tempfile.new("file2") }
+    let(:temporary_file) { Tempfile.new("temporary_file") }
+
     describe "#add_file" do
       it "should add file" do
-        Tempfile.open("foo") do |file|
-          file_selector.add_file(file.path)
-          expect(file_selector.files).to match_array [file.path]
-        end
+        file_selector.add_file(path1)
+        expect(file_selector.files).to match_array [path1]
       end
 
       it "should add directory" do
@@ -24,32 +30,23 @@ describe CoralBackup do
       end
 
       it "should reject nonexistent files" do
-        Tempfile.open("foo") do |file|
-          filename = file.path + "_lorem_ipsum"
-          expect { file_selector.add_file(filename) }.to raise_error Errno::ENOENT
-        end
+        expect { file_selector.add_file(nonexistent_path) }.to raise_error Errno::ENOENT
       end
 
       it "should be able to add multiple files" do
-        Tempfile.open("foo") do |file1|
-          Tempfile.open("bar") do |file2|
-            file_selector.add_file(file1.path)
-            file_selector.add_file(file2.path)
-            expect(file_selector.files).to match_array [file1.path, file2.path]
-          end
-        end
+        file_selector.add_file(path1)
+        file_selector.add_file(path2)
+        expect(file_selector.files).to match_array [path1, path2]
       end
 
       it "should add absolute path file" do
         tmpdir = Pathname.new(Dir.tmpdir).realpath # expand symlinks of Dir.tmpdir
-        Tempfile.open("foo", tmpdir) do |file|
-          absolute_path = file.path
-          relative_path = Pathname.new(absolute_path).relative_path_from(tmpdir).to_s
-          Dir.chdir(tmpdir) do
-            file_selector.add_file(relative_path)
-          end
-          expect(file_selector.files).to match_array [absolute_path]
+        absolute_path = path1
+        relative_path = Pathname.new(absolute_path).relative_path_from(tmpdir).to_s
+        Dir.chdir(tmpdir) do
+          file_selector.add_file(relative_path)
         end
+        expect(file_selector.files).to match_array [absolute_path]
       end
     end
 
@@ -61,52 +58,34 @@ describe CoralBackup do
       end
 
       it "should allow to input files" do
-        Tempfile.open("foo") do |file1|
-          Tempfile.open("bar") do |file2|
-            inputs = [file1.path.shellescape, file2.path.shellescape, nil].to_enum
-            allow(Readline).to receive(:readline) { inputs.next }
-            expect(CoralBackup::FileSelector.select).to match_array [file1.path, file2.path]
-          end
-        end
+        inputs = [path1.shellescape, path2.shellescape, nil].to_enum
+        allow(Readline).to receive(:readline) { inputs.next }
+        expect(CoralBackup::FileSelector.select).to match_array [path1, path2]
       end
 
       it "should allow to input multiple files" do
-        Tempfile.open("foo") do |file1|
-          Tempfile.open("bar") do |file2|
-            inputs = [[file1.path, file2.path].shelljoin, nil].to_enum
-            allow(Readline).to receive(:readline) { inputs.next }
-            expect(CoralBackup::FileSelector.select).to match_array [file1.path, file2.path]
-          end
-        end
+        inputs = [[path1, path2].shelljoin, nil].to_enum
+        allow(Readline).to receive(:readline) { inputs.next }
+        expect(CoralBackup::FileSelector.select).to match_array [path1, path2]
       end
 
       it "should reject nonexistent files" do
-        Tempfile.open("foo") do |file1|
-          Tempfile.open("bar") do |file2|
-            inputs = [(file1.path + "_lorem_ipsum").shellescape, file2.path.shellescape, nil].to_enum
-            allow(Readline).to receive(:readline) { inputs.next }
-            expect(CoralBackup::FileSelector.select).to match_array [file2.path]
-          end
-        end
+        inputs = [path1.shellescape, nonexistent_path.shellescape, nil].to_enum
+        allow(Readline).to receive(:readline) { inputs.next }
+        expect(CoralBackup::FileSelector.select).to match_array [path1]
       end
     end
 
     describe ".single_select" do
       it "should add a file" do
-        Tempfile.open("foo") do |file|
-          allow(Readline).to receive(:readline) { file.path }
-          expect(CoralBackup::FileSelector.single_select).to eq file.path
-        end
+        allow(Readline).to receive(:readline) { path1 }
+        expect(CoralBackup::FileSelector.single_select).to eq path1
       end
 
       it "should reject multiple files" do
-        Tempfile.open("foo") do |file1|
-          Tempfile.open("bar") do |file2|
-            inputs = [[file1.path, file2.path].shelljoin, nil].to_enum
-            allow(Readline).to receive(:readline) { inputs.next }
-            expect { CoralBackup::FileSelector.single_select }.to raise_error RuntimeError
-          end
-        end
+        inputs = [[path1, path2].shelljoin, nil].to_enum
+        allow(Readline).to receive(:readline) { inputs.next }
+        expect { CoralBackup::FileSelector.single_select }.to raise_error RuntimeError
       end
 
       it "should be needed to input a file" do
@@ -116,13 +95,9 @@ describe CoralBackup do
       end
 
       it "should add the file when input multiple files but only one file exists" do
-        Tempfile.open("foo") do |file1|
-          Tempfile.open("bar") do |file2|
-            inputs = [[file1.path + "_lorem_ipsum", file2.path].shelljoin, nil].to_enum
-            allow(Readline).to receive(:readline) { inputs.next }
-            expect(CoralBackup::FileSelector.single_select).to eq file2.path
-          end
-        end
+        inputs = [[file1.path, nonexistent_path].shelljoin, nil].to_enum
+        allow(Readline).to receive(:readline) { inputs.next }
+        expect(CoralBackup::FileSelector.single_select).to eq path1
       end
     end
   end
