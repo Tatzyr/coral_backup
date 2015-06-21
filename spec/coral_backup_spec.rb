@@ -6,7 +6,8 @@ describe CoralBackup do
   end
 
   describe CoralBackup::FileSelector do
-    let(:file_selector) { CoralBackup::FileSelector.new }
+    let(:file_selector) { file_selector_class.new }
+    let(:file_selector_class) { CoralBackup::FileSelector }
 
     let(:path1) { file1.path }
     let(:path2) { file2.path }
@@ -54,50 +55,50 @@ describe CoralBackup do
       it "should return empty array" do
         inputs = [nil].to_enum
         allow(Readline).to receive(:readline) { inputs.next }
-        expect(CoralBackup::FileSelector.select).to be_empty
+        expect(file_selector_class.select).to be_empty
       end
 
       it "should allow to input files" do
         inputs = [path1.shellescape, path2.shellescape, nil].to_enum
         allow(Readline).to receive(:readline) { inputs.next }
-        expect(CoralBackup::FileSelector.select).to match_array [path1, path2]
+        expect(file_selector_class.select).to match_array [path1, path2]
       end
 
       it "should allow to input multiple files" do
         inputs = [[path1, path2].shelljoin, nil].to_enum
         allow(Readline).to receive(:readline) { inputs.next }
-        expect(CoralBackup::FileSelector.select).to match_array [path1, path2]
+        expect(file_selector_class.select).to match_array [path1, path2]
       end
 
       it "should reject nonexistent files" do
         inputs = [path1.shellescape, nonexistent_path.shellescape, nil].to_enum
         allow(Readline).to receive(:readline) { inputs.next }
-        expect(CoralBackup::FileSelector.select).to match_array [path1]
+        expect(file_selector_class.select).to match_array [path1]
       end
     end
 
     describe ".single_select" do
       it "should add a file" do
         allow(Readline).to receive(:readline) { path1 }
-        expect(CoralBackup::FileSelector.single_select).to eq path1
+        expect(file_selector_class.single_select).to eq path1
       end
 
       it "should reject multiple files" do
         inputs = [[path1, path2].shelljoin, nil].to_enum
         allow(Readline).to receive(:readline) { inputs.next }
-        expect { CoralBackup::FileSelector.single_select }.to raise_error RuntimeError
+        expect { file_selector_class.single_select }.to raise_error RuntimeError
       end
 
       it "should be needed to input a file" do
         inputs = [nil].to_enum
         allow(Readline).to receive(:readline) { inputs.next }
-        expect { CoralBackup::FileSelector.single_select }.to raise_error RuntimeError
+        expect { file_selector_class.single_select }.to raise_error RuntimeError
       end
 
       it "should add the file when input multiple files but only one file exists" do
         inputs = [[file1.path, nonexistent_path].shelljoin, nil].to_enum
         allow(Readline).to receive(:readline) { inputs.next }
-        expect(CoralBackup::FileSelector.single_select).to eq path1
+        expect(file_selector_class.single_select).to eq path1
       end
     end
   end
