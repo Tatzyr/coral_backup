@@ -20,13 +20,13 @@ describe CoralBackup do
     describe "#add_file" do
       it "should add file" do
         file_selector.add_file(path1)
-        expect(file_selector.files).to match_array [path1]
+        expect(file_selector.files).to contain_exactly(path1)
       end
 
       it "should add directory" do
         Dir.mktmpdir do |dir|
           file_selector.add_file(dir)
-          expect(file_selector.files).to match_array [dir]
+          expect(file_selector.files).to contain_exactly(dir)
         end
       end
 
@@ -37,7 +37,7 @@ describe CoralBackup do
       it "should be able to add multiple files" do
         file_selector.add_file(path1)
         file_selector.add_file(path2)
-        expect(file_selector.files).to match_array [path1, path2]
+        expect(file_selector.files).to contain_exactly(path1, path2)
       end
 
       it "should add absolute path file" do
@@ -47,7 +47,7 @@ describe CoralBackup do
         Dir.chdir(tmpdir) do
           file_selector.add_file(relative_path)
         end
-        expect(file_selector.files).to match_array [absolute_path]
+        expect(file_selector.files).to contain_exactly(absolute_path)
       end
     end
 
@@ -61,19 +61,19 @@ describe CoralBackup do
       it "should allow to input files" do
         inputs = [path1.shellescape, path2.shellescape, nil].to_enum
         allow(Readline).to receive(:readline) { inputs.next }
-        expect(file_selector_class.select).to match_array [path1, path2]
+        expect(file_selector_class.select).to contain_exactly(path1, path2)
       end
 
       it "should allow to input multiple files" do
         inputs = [[path1, path2].shelljoin, nil].to_enum
         allow(Readline).to receive(:readline) { inputs.next }
-        expect(file_selector_class.select).to match_array [path1, path2]
+        expect(file_selector_class.select).to contain_exactly(path1, path2)
       end
 
       it "should reject nonexistent files" do
         inputs = [path1.shellescape, nonexistent_path.shellescape, nil].to_enum
         allow(Readline).to receive(:readline) { inputs.next }
-        expect(file_selector_class.select).to match_array [path1]
+        expect(file_selector_class.select).to contain_exactly(path1)
       end
     end
 
