@@ -19,13 +19,15 @@ describe CoralBackup do
 
     describe "#add_file" do
       it "should add file" do
-        file_selector.add_file(path1)
+        message = "#{path1}\n"
+        expect{ file_selector.add_file(path1) }.to output(message).to_stderr
         expect(file_selector.files).to contain_exactly(path1)
       end
 
       it "should add directory" do
         Dir.mktmpdir do |dir|
-          file_selector.add_file(dir)
+          message = dir + "\n"
+          expect{ file_selector.add_file(dir) }.to output(message).to_stderr
           expect(file_selector.files).to contain_exactly(dir)
         end
       end
@@ -35,17 +37,21 @@ describe CoralBackup do
       end
 
       it "should be able to add multiple files" do
-        file_selector.add_file(path1)
-        file_selector.add_file(path2)
+        message = path1 + "\n" + path2 + "\n"
+        expect {
+          file_selector.add_file(path1)
+          file_selector.add_file(path2)
+        }.to output(message).to_stderr
         expect(file_selector.files).to contain_exactly(path1, path2)
       end
 
       it "should add absolute path file" do
-        tmpdir = Pathname.new(Dir.tmpdir).realpath # expand symlinks of Dir.tmpdir
         absolute_path = path1
+        message = absolute_path + "\n"
+        tmpdir = Pathname.new(Dir.tmpdir).realpath # expand symlinks of Dir.tmpdir
         relative_path = Pathname.new(absolute_path).relative_path_from(tmpdir).to_s
         Dir.chdir(tmpdir) do
-          file_selector.add_file(relative_path)
+          expect { file_selector.add_file(relative_path) }.to output(message).to_stderr
         end
         expect(file_selector.files).to contain_exactly(absolute_path)
       end
@@ -59,34 +65,48 @@ describe CoralBackup do
       end
 
       it "should allow to input files" do
+        message = "#{path1}\n#{path2}\n"
         inputs = [path1.shellescape, path2.shellescape, nil].to_enum
         allow(Readline).to receive(:readline) { inputs.next }
-        expect(file_selector_class.select).to contain_exactly(path1, path2)
+        ret = nil
+        expect { ret = file_selector_class.select }.to output(message).to_stderr
+        expect(ret).to contain_exactly(path1, path2)
       end
 
       it "should allow to input multiple files" do
+        message = "WARNING: 2 files are being added:\n#{path1}\n#{path2}\n"
         inputs = [[path1, path2].shelljoin, nil].to_enum
         allow(Readline).to receive(:readline) { inputs.next }
-        expect(file_selector_class.select).to contain_exactly(path1, path2)
+        ret = nil
+        expect { ret = file_selector_class.select }.to output(message).to_stderr
+        expect(ret).to contain_exactly(path1, path2)
       end
 
       it "should reject nonexistent files" do
+        message = "#{path1}\nNo such file or directory - #{nonexistent_path}\n"
         inputs = [path1.shellescape, nonexistent_path.shellescape, nil].to_enum
         allow(Readline).to receive(:readline) { inputs.next }
-        expect(file_selector_class.select).to contain_exactly(path1)
+        ret = nil
+        expect { ret = file_selector_class.select }.to output(message).to_stderr
+        expect(ret).to contain_exactly(path1)
       end
     end
 
     describe ".single_select" do
       it "should add a file" do
+        message = "#{path1}\n"
         allow(Readline).to receive(:readline) { path1 }
-        expect(file_selector_class.single_select).to eq path1
+        ret = nil
+        expect { ret = file_selector_class.single_select }.to output(message).to_stderr
+        expect(ret).to eq(path1)
       end
 
       it "should reject multiple files" do
+        message = "WARNING: 2 files are being added:\n#{path1}\n#{path2}\n"
         inputs = [[path1, path2].shelljoin, nil].to_enum
         allow(Readline).to receive(:readline) { inputs.next }
-        expect { file_selector_class.single_select }.to raise_error RuntimeError
+        expect { file_selector_class.single_select }.to output(message).to_stderr \
+          .and raise_error RuntimeError
       end
 
       it "should be needed to input a file" do
@@ -96,9 +116,12 @@ describe CoralBackup do
       end
 
       it "should add the file when input multiple files but only one file exists" do
+        message = "WARNING: 2 files are being added:\n#{path1}\nNo such file or directory - #{nonexistent_path}\n"
         inputs = [[file1.path, nonexistent_path].shelljoin, nil].to_enum
         allow(Readline).to receive(:readline) { inputs.next }
-        expect(file_selector_class.single_select).to eq path1
+        ret = nil
+        expect { ret = file_selector_class.single_select }.to output(message).to_stderr
+        expect(ret).to eq path1
       end
     end
   end
