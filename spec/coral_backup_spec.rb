@@ -36,7 +36,7 @@ describe CoralBackup do
         expect { file_selector.add_file(nonexistent_path) }.to raise_error Errno::ENOENT
       end
 
-      it "should be able to add multiple files" do
+      it "should allow to add multiple files" do
         message = path1 + "\n" + path2 + "\n"
         expect {
           file_selector.add_file(path1)
