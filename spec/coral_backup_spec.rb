@@ -64,7 +64,7 @@ describe CoralBackup do
         expect(file_selector_class.select).to be_empty
       end
 
-      it "should allow to input files" do
+      it "should allow to input multiple files" do
         message = "#{path1}\n#{path2}\n"
         inputs = [path1.shellescape, path2.shellescape, nil].to_enum
         allow(Readline).to receive(:readline) { inputs.next }
@@ -73,7 +73,7 @@ describe CoralBackup do
         expect(ret).to contain_exactly(path1, path2)
       end
 
-      it "should allow to input multiple files" do
+      it "should allow to input multiple files in one line" do
         message = "WARNING: 2 files are being added:\n#{path1}\n#{path2}\n"
         inputs = [[path1, path2].shelljoin, nil].to_enum
         allow(Readline).to receive(:readline) { inputs.next }
@@ -101,7 +101,7 @@ describe CoralBackup do
         expect(ret).to eq(path1)
       end
 
-      it "should reject multiple files" do
+      it "should reject multiple files in one line" do
         message = "WARNING: 2 files are being added:\n#{path1}\n#{path2}\n"
         inputs = [[path1, path2].shelljoin, nil].to_enum
         allow(Readline).to receive(:readline) { inputs.next }
