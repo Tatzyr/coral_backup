@@ -1,5 +1,9 @@
 # Coral Backup
 
+[![Gem Version](https://badge.fury.io/rb/coral_backup.svg)](http://badge.fury.io/rb/coral_backup)
+[![Build Status](https://travis-ci.org/Tatzyr/coral_backup.svg?branch=master)](https://travis-ci.org/Tatzyr/coral_backup)
+[![Dependency Status](https://gemnasium.com/Tatzyr/coral_backup.svg)](https://gemnasium.com/Tatzyr/coral_backup)
+
 Coral Backup creates incremental backups of files that can be restored at a later date.
 
 ![run](https://cloud.githubusercontent.com/assets/1025461/8147090/2d8be3bc-1299-11e5-8c46-50127cf74246.gif)
