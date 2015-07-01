@@ -72,7 +72,7 @@ module CoralBackup
 
     map run: :__run
     desc "run <ACTION>", "Run the backup action"
-    option :"dry-run", :type => :boolean, aliases: :d, desc: "Show what would have been backed up, but do not back them up"
+    option :"dry-run", type: :boolean, aliases: :d, desc: "Show what would have been backed up, but do not back them up"
     def __run(action_name)
       unless rsync_version.split(".").first.to_i >= 3
         warn "ERROR: rsync version must be larger than 3.X.X"
@@ -83,12 +83,12 @@ module CoralBackup
       data = @settings.action_data(action_name)
 
       destination = data[:destination]
-      dryrun = options[:"dry-run"]
+      dry_run = options[:"dry-run"]
       exclusions = data[:exclusions]
       source = data[:source]
 
       args = ["rsync", "-rlptgoxS", "--delete", "-X", "--progress", "--stats"]
-      args << "--dry-run" if dryrun
+      args << "--dry-run" if dry_run
 
       new_destination = File.expand_path("#{action_name} backup #{Time.now.strftime("%F-%H%M%S")}", destination)
       old_destination =
@@ -122,7 +122,7 @@ module CoralBackup
 
       system(args.flatten.shelljoin)
 
-      @settings.update_time(action_name, time) unless dryrun
+      @settings.update_time(action_name, time) unless dry_run
     end
 
 
