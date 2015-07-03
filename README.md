@@ -27,8 +27,8 @@ $ gem install coral_backup
 
 ### Options
 
-* `-d`, `--dry-run`: Show what would have been backed up, but do not back them up
-* `-t`, `--updating-time`: Update time when backup is finished
+* `-d`, `--dry-run`, `--no-dry-run`: Show what would have been backed up, but do not back them up
+* `-t`, `--updating-time`, `--no-updating-time`: Update time when backup is finished
 
 ### Demo
 
