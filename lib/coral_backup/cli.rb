@@ -3,15 +3,6 @@ require "thor"
 
 module CoralBackup
   class CLI < Thor
-    OSX_VOLUME_ROOT_EXCLUSIONS = %w[
-      .DocumentRevisions-V100
-      .fseventsd
-      .Spotlight-V100
-      .TemporaryItems
-      .Trashes
-      .VolumeIcon.icns
-    ]
-
     def initialize(*args)
       super
       @settings = Settings.new
@@ -75,56 +66,20 @@ module CoralBackup
     option :"dry-run", type: :boolean, aliases: :d, desc: "Show what would have been backed up, but do not back them up"
     option :"updating-time", type: :boolean, default: true, aliases: :t, desc: "Update time when backup is finished"
     def __run(action_name)
-      unless rsync_version.split(".").first.to_i >= 3
-        warn "ERROR: rsync version must be larger than 3.X.X"
-        exit 1
-      end
-
-      time = Time.now
       data = @settings.action_data(action_name)
-
-      destination = data[:destination]
-      dry_run = options[:"dry-run"]
-      updating_time = options[:"updating-time"]
-      exclusions = data[:exclusions]
       source = data[:source]
+      destination = data[:destination]
+      exclusions = data[:exclusions]
+      dry_run = options[:"dry-run"]
 
-      args = ["rsync", "-rlptgoxS", "--delete", "-X", "--progress", "--stats"]
-      args << "--dry-run" if dry_run
+      rsync = Rsync.new(source, destination, exclusions)
+      rsync.run(action_name, dry_run: dry_run)
 
-      new_destination = File.expand_path("#{action_name} backup #{Time.now.strftime("%F-%H%M%S")}", destination)
-      old_destination =
-        Dir.chdir(destination) {
-          Dir["*"]
-        }.select{|dirname|
-          dirname.match(/#{Regexp.escape(action_name)} backup \d{4}-\d{2}-\d{2}-\d{6}/)
-        }.sort.last
-
-      if old_destination
-        args << "--link-dest"
-        args << Pathname.new(File.expand_path(old_destination, destination)).relative_path_from(Pathname.new(new_destination)).to_s
-      end
-
-      exclusions.each do |exclusion|
-        args << "--exclude"
-        args << Pathname.new(exclusion).relative_path_from(Pathname.new(source)).to_s
-      end
-
-      if RUBY_PLATFORM.match(/darwin/)
-        if File.expand_path("..", source) == "/Volumes"
-          OSX_VOLUME_ROOT_EXCLUSIONS.each do |vr_exclusion|
-            args << "--exclude"
-            args << vr_exclusion
-          end
-        end
-      end
-
-      args << source
-      args << new_destination
-
-      system(args.flatten.shelljoin)
-
-      @settings.update_time(action_name, time) if !dry_run && updating_time
+      updating_time = options[:"updating-time"]
+      @settings.update_time(action_name, Time.now) if !dry_run && updating_time
+    rescue RuntimeError => e
+      warn "ERROR: #{e}"
+      exit 1
     end
 
 
@@ -156,13 +111,6 @@ module CoralBackup
     desc "version", "Print the version"
     def version
       puts VERSION
-    end
-
-    no_tasks do
-      def rsync_version
-        `rsync --version`.match(/^\s*rsync\s*version\s*(\d+\.\d+\.\d+)/)
-        $1
-      end
     end
   end
 end
