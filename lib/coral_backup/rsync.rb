@@ -24,7 +24,7 @@ module CoralBackup
 
 
     def run(action_name, dry_run: false)
-      args = ["rsync", "-rlptgoxS", "--delete", "-X", "--progress", "--stats"]
+      args = ["rsync", "-rlptgoxSX", "--delete", "--progress", "--stats"]
       args << "--dry-run" if dry_run
 
       new_destination = File.expand_path("#{action_name} backup #{Time.now.strftime("%F-%H%M%S")}", @destination)
