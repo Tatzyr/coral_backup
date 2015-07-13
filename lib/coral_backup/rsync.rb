@@ -20,44 +20,52 @@ module CoralBackup
       @source = source
       @destination = destination
       @exclusions = exclusions
+      @args = ["rsync", "-rlptgoxSX", "--delete", "--progress", "--stats"]
     end
 
 
     def run(action_name, dry_run: false)
-      args = ["rsync", "-rlptgoxSX", "--delete", "--progress", "--stats"]
-      args << "--dry-run" if dry_run
+      @args << "--dry-run" if dry_run
 
       new_destination = File.expand_path("#{action_name} backup #{Time.now.strftime("%F-%H%M%S")}", @destination)
-      old_destination =
-        Dir.chdir(@destination) {
-          Dir["*"]
-        }.select{|dirname|
-          dirname.match(/#{Regexp.escape(action_name)} backup \d{4}-\d{2}-\d{2}-\d{6}/)
-        }.sort.last
+      last_destination = find_last_destination(action_name)
 
-      if old_destination
-        args << "--link-dest"
-        args << Pathname.new(File.expand_path(old_destination, @destination)).relative_path_from(Pathname.new(new_destination)).to_s
+      if last_destination
+        @args << "--link-dest"
+        @args << Pathname.new(File.expand_path(last_destination, @destination)).relative_path_from(Pathname.new(new_destination)).to_s
       end
 
       @exclusions.each do |exclusion|
-        args << "--exclude"
-        args << Pathname.new(exclusion).relative_path_from(Pathname.new(@source)).to_s
+        @args << "--exclude"
+        @args << Pathname.new(exclusion).relative_path_from(Pathname.new(@source)).to_s
       end
 
+      add_osx_exclusions
+
+      @args << @source
+      @args << new_destination
+
+      system(@args.flatten.shelljoin)
+    end
+
+    def find_last_destination(action_name)
+      Dir.chdir(@destination) {
+        Dir["*"]
+      }.select{|dirname|
+        dirname.match(/#{Regexp.escape(action_name)} backup \d{4}-\d{2}-\d{2}-\d{6}/)
+      }.sort.last
+    end
+    private :find_last_destination
+
+    def add_osx_exclusions
       if Rsync.osx?
         if File.expand_path("..", @source) == "/Volumes"
-          OSX_VOLUME_ROOT_EXCLUSIONS.each do |vr_exclusion|
-            args << "--exclude"
-            args << vr_exclusion
+          OSX_VOLUME_ROOT_EXCLUSIONS.each do |exclusion|
+            @args << "--exclude"
+            @args << exclusion
           end
         end
       end
-
-      args << @source
-      args << new_destination
-
-      system(args.flatten.shelljoin)
     end
 
     def self.version
