@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["tatzyr@gmail.com"]
 
   spec.summary       = %q{Coral Backup creates incremental backups of files that can be restored at a later date.}
-  spec.homepage      = "https://github.com/tatzyr/coral_backup"
+  spec.homepage      = "https://github.com/Tatzyr/coral_backup"
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   spec.bindir        = "exe"
