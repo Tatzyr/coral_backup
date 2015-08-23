@@ -6,7 +6,7 @@ require 'coral_backup/version'
 Gem::Specification.new do |spec|
   spec.name          = "coral_backup"
   spec.version       = CoralBackup::VERSION
-  spec.authors       = ["OTSUKA Tatsuya"]
+  spec.authors       = ["Tatsuya Otsuka"]
   spec.email         = ["tatzyr@gmail.com"]
 
   spec.summary       = %q{Coral Backup creates incremental backups of files that can be restored at a later date.}
