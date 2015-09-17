@@ -16,7 +16,7 @@ module CoralBackup
       end
 
       puts "Drag and drop or input source directory."
-      source = FileSelector.single_select
+      source = FileSelector.select_file
       unless FileTest.directory?(source)
         warn "ERROR: Not a directory: #{source}"
         exit 1
@@ -25,7 +25,7 @@ module CoralBackup
 
       puts "Drag and drop or input exclusion files/directories."
       puts "Press Ctrl + D to finish."
-      exclusions = FileSelector.select
+      exclusions = FileSelector.select_files
       exclusions.map! {|filename|
         if FileTest.directory?(filename)
           filename << "/" unless filename.end_with?("/")
@@ -35,7 +35,7 @@ module CoralBackup
       exclusions.uniq!
 
       puts "Drag and drop or input destination directory."
-      destination = FileSelector.single_select
+      destination = FileSelector.select_file
       unless FileTest.directory?(destination)
         warn "ERROR: Not a directory: #{destination}"
         exit 1

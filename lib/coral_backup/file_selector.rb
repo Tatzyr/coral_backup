@@ -3,63 +3,55 @@ require "readline"
 
 module CoralBackup
   class FileSelector
-    attr_reader :files
+    def self.select_files
+      new.instance_eval do
+        while raw_input = Readline.readline
+          filenames = Shellwords.split(raw_input)
+          warn "WARNING: #{filenames.length} files are being added:" unless filenames.length == 1
+
+          filenames.each do |ex|
+            begin
+              add_file(ex)
+            rescue Errno::ENOENT => e
+              warn e
+            end
+          end
+        end
+
+        @files.uniq
+      end
+    end
+
+    def self.select_file
+      new.instance_eval do
+        while @files.size < 1 && raw_input = Readline.readline
+          filenames = Shellwords.split(raw_input)
+          warn "WARNING: #{filenames.length} files are being added:" unless filenames.length == 1
+          filenames.each do |ex|
+            begin
+              add_file(ex)
+            rescue Errno::ENOENT => e
+              warn e
+            end
+          end
+        end
+
+        raise "Wrong number of files (#{@files.length} for 1)" unless @files.length == 1
+
+        @files.first
+      end
+    end
 
     def initialize
       @files = []
     end
 
+    private
     def add_file(filename)
-      if FileTest.exist?(filename)
-        expanded_filename = File.expand_path(filename)
-        @files << File.expand_path(expanded_filename)
-        warn expanded_filename
-      else
-        raise Errno::ENOENT, filename
-      end
-    end
-
-    def self.select
-      file_selector = new
-      Readline.completion_proc = Readline::FILENAME_COMPLETION_PROC
-      while buf = Readline.readline("> ")
-        expanded = Shellwords.split(buf)
-        warn "WARNING: #{expanded.length} files are being added:" unless expanded.length == 1
-
-        expanded.each do |ex|
-          begin
-            file_selector.add_file(ex)
-          rescue Errno::ENOENT => e
-            warn e
-          end
-        end
-      end
-
-      file_selector.files.uniq
-    end
-
-
-    def self.single_select
-      file_selector = new
-      Readline.completion_proc = Readline::FILENAME_COMPLETION_PROC
-      file_added = false
-      while !file_added && buf = Readline.readline("> ")
-        expanded = Shellwords.split(buf)
-        warn "WARNING: #{expanded.length} files are being added:" unless expanded.length == 1
-        expanded.each do |ex|
-          begin
-            file_selector.add_file(ex)
-          rescue Errno::ENOENT => e
-            warn e
-          else
-            file_added = true
-          end
-        end
-      end
-
-      raise "Wrong number of files (#{file_selector.files.length} for 1)" unless file_selector.files.length == 1
-
-      file_selector.files[0]
+      raise Errno::ENOENT, filename unless FileTest.exist?(filename)
+      filenames_filename = File.expand_path(filename)
+      @files << File.expand_path(filenames_filename)
+      warn filenames_filename
     end
   end
 end
