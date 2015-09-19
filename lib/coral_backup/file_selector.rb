@@ -49,9 +49,9 @@ module CoralBackup
     private
     def add_file(filename)
       raise Errno::ENOENT, filename unless FileTest.exist?(filename)
-      filenames_filename = File.expand_path(filename)
-      @files << File.expand_path(filenames_filename)
-      warn filenames_filename
+      filenames = File.expand_path(filename)
+      @files << File.expand_path(filenames)
+      warn filenames
     end
   end
 end
