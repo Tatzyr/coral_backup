@@ -19,9 +19,9 @@ $ gem install coral_backup
 
 * `coral add <ACTION>`: Add a new backup action
 * `coral delete <ACTION>`: Delete the backup action
+* `coral exec <ACTION>`: Execute the backup action
 * `coral help [COMMAND]`: Describe available commands or one specific command
 * `coral list`: Show all backup actions
-* `coral run <ACTION>`: Run the backup action
 * `coral info <ACTION>`: Show information about the backup action
 * `coral version`: Print the version
 

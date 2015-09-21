@@ -61,11 +61,10 @@ module CoralBackup
       puts @settings.action_names
     end
 
-    map run: :__run
-    desc "run <ACTION>", "Run the backup action"
+    desc "exec <ACTION>", "Execute the backup action"
     option :"dry-run", type: :boolean, aliases: :d, desc: "Show what would have been backed up, but do not back them up"
     option :"updating-time", type: :boolean, default: true, aliases: :t, desc: "Update time when backup is finished"
-    def __run(action_name)
+    def exec(action_name)
       data = @settings.action_data(action_name)
       source = data[:source]
       destination = data[:destination]
@@ -97,7 +96,7 @@ module CoralBackup
         puts data[:exclusions]
       end
 
-      print "Last backup run at: "
+      print "Last backup executed at: "
       if data[:last_run_time].nil?
         puts "No backup yet"
       else
