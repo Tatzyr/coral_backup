@@ -24,9 +24,9 @@ module CoralBackup
       action_names.include?(action_name)
     end
 
-    def add(action_name, source, destination, exclusions)
+    def add(action_name, source, destination, excluded_files)
       raise ArgumentError, "Backup action `#{action_name}' already exists." if exist_action?(action_name)
-      @settings[:actions][action_name] = { source: source, destination: destination, exclusions: exclusions }
+      @settings[:actions][action_name] = { source: source, destination: destination, excluded_files: excluded_files }
       file_dump
     end
 

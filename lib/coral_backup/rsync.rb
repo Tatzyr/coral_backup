@@ -3,7 +3,7 @@ require "thor"
 
 module CoralBackup
   class Rsync
-    OSX_VOLUME_ROOT_EXCLUSIONS = %w[
+    OSX_VOLUME_ROOT_EXCLUDED_FILES = %w[
       .DocumentRevisions-V100
       .fseventsd
       .Spotlight-V100
@@ -12,14 +12,14 @@ module CoralBackup
       .VolumeIcon.icns
     ]
 
-    def initialize(source, destination, exclusions)
+    def initialize(source, destination, excluded_files)
       unless Rsync.version.split(".").first.to_i >= 3
         raise "rsync version must be larger than 3.X.X"
       end
 
       @source = source
       @destination = destination
-      @exclusions = exclusions
+      @excluded_files = excluded_files
       @args = ["rsync", "-rlptgoxSX", "--delete", "--progress", "--stats"]
     end
 
@@ -35,12 +35,12 @@ module CoralBackup
         @args << Pathname.new(File.expand_path(last_destination, @destination)).relative_path_from(Pathname.new(new_destination)).to_s
       end
 
-      @exclusions.each do |exclusion|
+      @excluded_files.each do |excluded_file|
         @args << "--exclude"
-        @args << Pathname.new(exclusion).relative_path_from(Pathname.new(@source)).to_s
+        @args << Pathname.new(excluded_file).relative_path_from(Pathname.new(@source)).to_s
       end
 
-      add_osx_exclusions
+      add_osx_excluded_files
 
       @args << @source
       @args << new_destination
@@ -57,12 +57,12 @@ module CoralBackup
     end
     private :find_last_destination
 
-    def add_osx_exclusions
+    def add_osx_excluded_files
       if Rsync.osx?
         if File.expand_path("..", @source) == "/Volumes"
-          OSX_VOLUME_ROOT_EXCLUSIONS.each do |exclusion|
+          OSX_VOLUME_ROOT_EXCLUDED_FILES.each do |excluded_file|
             @args << "--exclude"
-            @args << exclusion
+            @args << excluded_file
           end
         end
       end

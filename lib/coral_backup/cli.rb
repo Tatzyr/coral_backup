@@ -23,16 +23,16 @@ module CoralBackup
       end
       source << "/" unless source.end_with?("/")
 
-      puts "Drag and drop or input exclusion files/directories."
+      puts "Drag and drop or input excluded files/directories."
       puts "Press Ctrl + D to finish."
-      exclusions = FileSelector.select_files
-      exclusions.map! {|filename|
+      excluded_files = FileSelector.select_files
+      excluded_files.map! {|filename|
         if FileTest.directory?(filename)
           filename << "/" unless filename.end_with?("/")
         end
         filename
       }
-      exclusions.uniq!
+      excluded_files.uniq!
 
       puts "Drag and drop or input destination directory."
       destination = FileSelector.select_file
@@ -42,7 +42,7 @@ module CoralBackup
       end
       destination << "/" unless destination.end_with?("/")
 
-      @settings.add(action_name, source, destination, exclusions)
+      @settings.add(action_name, source, destination, excluded_files)
     rescue RuntimeError => e
       warn "ERROR: #{e}"
       exit 1
@@ -68,10 +68,10 @@ module CoralBackup
       data = @settings.action_data(action_name)
       source = data[:source]
       destination = data[:destination]
-      exclusions = data[:exclusions]
+      excluded_files = data[:excluded_files]
       dry_run = options[:"dry-run"]
 
-      rsync = Rsync.new(source, destination, exclusions)
+      rsync = Rsync.new(source, destination, excluded_files)
       rsync.run(action_name, dry_run: dry_run)
 
       updating_time = options[:"updating-time"]
@@ -88,12 +88,12 @@ module CoralBackup
 
       puts "Source: #{data[:source]}"
       puts "Destination: #{data[:destination]}"
-      print "exclusions: "
-      if data[:exclusions].empty?
-        puts "(No exclusions)"
+      print "Excluded files: "
+      if data[:excluded_files].empty?
+        puts "(No excluded files)"
       else
-        puts "#{data[:exclusions].size} exclusion(s)"
-        puts data[:exclusions]
+        puts "#{data[:excluded_files].size} excluded file(s)"
+        puts data[:excluded_files]
       end
 
       print "Last backup executed at: "
