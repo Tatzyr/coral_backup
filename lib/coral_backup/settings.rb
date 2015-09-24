@@ -38,7 +38,7 @@ module CoralBackup
 
     def update_time(action_name, time)
       raise ArgumentError, "Backup action `#{action_name}' does not exist." unless exist_action?(action_name)
-      @settings[:actions][action_name][:last_run_time] = time.to_s
+      @settings[:actions][action_name][:last_excuted_at] = time.to_s
       file_dump
     end
 

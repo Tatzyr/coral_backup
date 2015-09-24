@@ -97,10 +97,10 @@ module CoralBackup
       end
 
       print "Last backup executed at: "
-      if data[:last_run_time].nil?
-        puts "No backup yet"
+      if data[:last_excuted_at]
+        puts data[:last_excuted_at]
       else
-        puts data[:last_run_time]
+        puts "No backup yet"
       end
     rescue  ArgumentError => e
       warn "ERROR: #{e}"
