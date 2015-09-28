@@ -80,4 +80,85 @@ describe CoralBackup do
       end
     end
   end
+
+  describe CoralBackup::Settings do
+    SETTINGS_DATA = {
+      actions: {
+        "test1"=>{
+          source: "/path/to/source/",
+          destination: "/path/to/destination/",
+          excluded_files: ["/path/to/excluded_file1", "/path/to/excluded_files2"],
+          last_excuted_at: "1992-12-11 06:11:00 +0900"
+        }
+      }
+    }
+
+    let(:settings) {
+      allow_any_instance_of(CoralBackup::Settings).to receive(:load!).and_return(Marshal.load(Marshal.dump(SETTINGS_DATA)))
+      allow_any_instance_of(CoralBackup::Settings).to receive(:save!)
+      CoralBackup::Settings.new
+    }
+
+    let(:empty_settings) {
+      allow_any_instance_of(CoralBackup::Settings).to receive(:load!).and_return(Marshal.load(Marshal.dump(CoralBackup::Settings::INITIAL_SETTINGS)))
+      allow_any_instance_of(CoralBackup::Settings).to receive(:save!)
+      CoralBackup::Settings.new
+    }
+
+    describe "#action_data" do
+      it "should return raw data of action" do
+        expect(settings.action_data("test1")).to eq SETTINGS_DATA[:actions]["test1"]
+      end
+
+      it "should raise error when receive nonexistent action" do
+        expect { settings.action_data("foofoo") }.to raise_error ArgumentError
+      end
+    end
+
+    describe "#action_names" do
+      it "should return array of action names" do
+        expect(settings.action_names).to contain_exactly("test1")
+        expect(empty_settings.action_names).to be_empty
+      end
+    end
+
+    describe "#exist_action?" do
+      it "should return true or false" do
+        expect(settings.exist_action?("test1")).to be true
+        expect(settings.exist_action?("test1foo")).to be false
+      end
+    end
+
+    describe "#add" do
+      it "should add the action" do
+        expect { settings.add("test2", "s", "d", ["e"]) }.to change { settings.exist_action?("test2") }.from(false).to(true)
+      end
+
+      it "should raise error if given action already exists" do
+        expect { settings.add("test1", "s", "d", ["e"]) }.to raise_error ArgumentError
+      end
+    end
+
+    describe "#delete" do
+      it "should delete the action" do
+        expect { settings.delete("test1") }.to change { settings.exist_action?("test1") }.from(true).to(false)
+      end
+
+      it "should raise error if given action does not exist" do
+        expect { settings.delete("test2") }.to raise_error ArgumentError
+      end
+    end
+
+    describe "#update_time" do
+      it "should update time" do
+        old_time = "1992-12-11 06:11:00 +0900"
+        new_time = Time.now.to_s
+        expect { settings.update_time("test1", new_time) }.to change { settings.action_data("test1")[:last_excuted_at] }.from(old_time).to(new_time)
+      end
+
+      it "should raise error if given action does not exist" do
+        expect { settings.update_time("test2") }.to raise_error ArgumentError
+      end
+    end
+  end
 end
